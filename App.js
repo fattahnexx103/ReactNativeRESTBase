@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, FlatList, Image } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, FlatList, Image, ScrollView } from 'react-native';
 import {Card, CardItem, Header} from 'native-base';
 
 export default class App extends React.Component{
@@ -12,22 +12,23 @@ export default class App extends React.Component{
     };
   }
 
+  //method to get the data from api
   getUserFromApi = () => {
 
-  url ='https://randomuser.me/api/?results=50';
+  url ='https://randomuser.me/api/?results=50'; //url to fetch from
   return fetch(url)
-    .then(response => response.json())
-    .then(responseJson => {
-      this.setState({
-        isLoading: false,
-        apiData: this.state.apiData.concat(responseJson.results)
-      });
+    .then(response => response.json()) //we get response but we make sure its json
+    .then(responseJson => { //take the made sure json
+      this.setState({ //add it to the state
+        isLoading: false, //since json is there do not load anymore
+        apiData: this.state.apiData.concat(responseJson.results) // .results because the array is called results
+      }); //we concated the json becasue there could be something in the state before that
     })
-    .catch(error => console.log(error));
+    .catch(error => console.log( "JSON FETCH ERROR --- " + error)); //catch the json fetching error
 };
 
   componentDidMount(){
-    this.getUserFromApi();
+    this.getUserFromApi(); //call jsonfetching right after render method is called in App
   }
 
   //key extractor for FlatList
@@ -45,11 +46,13 @@ export default class App extends React.Component{
     }
 
     return (
+    <ScrollView>
     <FlatList
+      style={{marginTop: 20, backgroundColor: '#30336B', marginEnd: 10}}
       data={this.state.apiData}
       keyExtractor={this._keyExtractor}
       renderItem={({ item }) => (
-        <Card>
+        <Card style={{backgroundColor: 'black'}}>
           <CardItem>
             <View style={styles.container}>
               <Image
@@ -60,17 +63,18 @@ export default class App extends React.Component{
               />
             </View>
             <View style={styles.userinfo}>
-              <Text>
-                Name: {item.name.title} {item.name.first} {item.name.last}
+              <Text style={{color: 'white', fontWeight: 'bold', fontSize: 18}}>
+                {item.name.first.toUpperCase()} {item.name.last.toUpperCase()}
               </Text>
-              <Text>Email: {item.email}</Text>
-              <Text>City: {item.location.city}</Text>
-              <Text>Phone: {item.phone}</Text>
+              <Text style={{color: 'white'}}>Email: {item.email}</Text>
+              <Text style={{color: 'white'}}>City: {item.location.city}</Text>
+              <Text style={{color: 'white'}}>Phone: {item.phone}</Text>
             </View>
           </CardItem>
         </Card>
       )}
     />
+    </ScrollView>
   );
 }
 }
@@ -78,12 +82,13 @@ export default class App extends React.Component{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center"
   },
   profilepic: {
     flex: 2,
+    padding: 10,
     height: 100,
     width: 100,
     marginEnd: 10
@@ -91,7 +96,9 @@ const styles = StyleSheet.create({
   userinfo: {
     flex: 5,
     flexDirection: "column",
-    marginStart: 25
+    backgroundColor: '#30336B',
+    marginStart: 25,
+    padding: 10
   },
   progress: {
     flex: 1,
