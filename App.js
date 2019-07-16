@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, FlatList, Image } from 'react-native';
 import {Card, CardItem, Header} from 'native-base';
 
 export default class App extends React.Component{
@@ -12,33 +12,26 @@ export default class App extends React.Component{
     };
   }
 
-  getUserFromAPI = () =>{
+  getUserFromApi = () => {
 
-    //api Link URL
-    let url = 'https://randomapi.com/api/6de6abfedb24f889e0b5f675edc50deb?fmt=raw&sole';
-
-    return(
-      //method fetch used to get apiData
-      fetch(url)
-        .then((result) =>{ //we get the result
-          result.json() //we make sure result is converted to json
-        }).
-        then((jsonResult) =>{ //jsonResult is the json now
-          //change state to put new json in there
-          this.setState({
-            isLoading: false, //since we got the result
-            apiData: this.state.apiData.concat(jsonResult)  //we do this in case there was data before in the state
-          })
-        })
-        .catch((error) =>{
-          console.log('FETCHING JSON ERROR ....' + error);
-        })
-    )
-  }
+  url ='https://randomuser.me/api/?results=50';
+  return fetch(url)
+    .then(response => response.json())
+    .then(responseJson => {
+      this.setState({
+        isLoading: false,
+        apiData: this.state.apiData.concat(responseJson.results)
+      });
+    })
+    .catch(error => console.log(error));
+};
 
   componentDidMount(){
-    this.getUserFromAPI();
+    this.getUserFromApi();
   }
+
+  //key extractor for FlatList
+  _keyExtractor = (apiData, index) => apiData.email;
 
   render(){
 
@@ -52,19 +45,57 @@ export default class App extends React.Component{
     }
 
     return (
-      <View style={styles.container}>
-        <Text style={{color: 'white'}}>This is REST App</Text>
-      </View>
-    );
-  }
+    <FlatList
+      data={this.state.apiData}
+      keyExtractor={this._keyExtractor}
+      renderItem={({ item }) => (
+        <Card>
+          <CardItem>
+            <View style={styles.container}>
+              <Image
+                style={styles.profilepic}
+                source={{
+                  uri: item.picture.medium
+                }}
+              />
+            </View>
+            <View style={styles.userinfo}>
+              <Text>
+                Name: {item.name.title} {item.name.first} {item.name.last}
+              </Text>
+              <Text>Email: {item.email}</Text>
+              <Text>City: {item.location.city}</Text>
+              <Text>Phone: {item.phone}</Text>
+            </View>
+          </CardItem>
+        </Card>
+      )}
+    />
+  );
+}
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-    color: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "black",
+    alignItems: "center",
+    justifyContent: "center"
   },
+  profilepic: {
+    flex: 2,
+    height: 100,
+    width: 100,
+    marginEnd: 10
+  },
+  userinfo: {
+    flex: 5,
+    flexDirection: "column",
+    marginStart: 25
+  },
+  progress: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  }
 });
